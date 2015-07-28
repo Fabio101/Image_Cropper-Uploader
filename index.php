@@ -70,13 +70,6 @@ $(document).ready(function(){
 });
 
 //FUNCTIONS
-function beforeSubmit() {
-	$('#img-file-upload').hide();
-	$('#img-file-crop').hide();
-	$('#img-file-input').hide();
-	$('#img-file-output').hide();
-}
-
 function validateImage() {
 	 if (window.File && window.FileReader && window.FileList && window.Blob) {
                 if( !$('#img-file-input').val()) {
