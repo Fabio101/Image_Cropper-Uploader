@@ -12,7 +12,7 @@
 <div class="container-fluid">
   <div class="row">
     	<div class="col-sm-4">
-		<h1 class="col-sm-4-heading">Crop and Upload a Image!</h1>
+		<h1 class="col-sm-4-heading">Crop and Upload your Image!</h1>
 		<form id="img-crop-form" action="upload.php" method="post" enctype="multipart/form-data">
 			</br>
     			<input id="img-file-input" type="file" class="form-control">
