@@ -35,6 +35,9 @@ if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg
     echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed. ";
     $uploadOk = 0;
     header("HTTP/1.1 500 Not a valid image format!");
+}else {
+    // Determine file extension
+    $ext = end((explode(".", $target_file)));
 }
 
 // Check if $uploadOk is set to 0 by an error
@@ -45,10 +48,12 @@ if ($uploadOk == 0) {
 // if everything is ok, try to upload file
 } else {
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+        unlink($target_dir. "company." . $ext);
+        rename($target_file, $target_dir . "company." . $ext);
         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
         header("HTTP/1.1 200 OK");
     } else {
-        echo "Sorry, there was an error uploading your file.";
+        echo "Sorry, there was an error uploading your file, Please contact support@parallel.co.za.";
         header("HTTP/1.1 500 An error occured whilst trying upload your image!");
     }
 }
