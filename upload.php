@@ -1,80 +1,55 @@
 <?php
-/*
-##########################################################################
-#                      PHP Benchmark Performance Script                  #
-#                         © 2010 Code24 BV                               # 
-#                                                                        #
-#  Author      : Alessandro Torrisi                                      #
-#  Company     : Code24 BV, The Netherlands                              #
-#  Date        : July 31, 2010                                           #
-#  version     : 1.0                                                     #
-#  License     : Creative Commons CC-BY license                          #
-#  Website     : http://www.php-benchmark-script.com                     #	
-#                                                                        #
-##########################################################################
-*/
+$target_dir = "../client_data/". $_POST["company_login"] . "/";
+$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+$uploadOk = 1;
+$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+// Check if image file is a actual image or fake image
+if(isset($_POST["submit"])) {
+    $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
+    if($check !== false) {
+        echo "File is an image - " . $check["mime"] . ".";
+        $uploadOk = 1;
+    } else {
+        echo "File is not an image.";
+        $uploadOk = 0;
+        header("HTTP/1.1 500 Not an image! ");
+    }
+}
 
-	function test_Math($count = 140000) {
-		$time_start = microtime(true);
-		$mathFunctions = array("abs", "acos", "asin", "atan", "bindec", "floor", "exp", "sin", "tan", "pi", "is_finite", "is_nan", "sqrt");
-		foreach ($mathFunctions as $key => $function) {
-			if (!function_exists($function)) unset($mathFunctions[$key]);
-		}
-		for ($i=0; $i < $count; $i++) {
-			foreach ($mathFunctions as $function) {
-				$r = call_user_func_array($function, array($i));
-			}
-		}
-		return number_format(microtime(true) - $time_start, 3);
-	}
-	
-	
-	function test_StringManipulation($count = 130000) {
-		$time_start = microtime(true);
-		$stringFunctions = array("addslashes", "chunk_split", "metaphone", "strip_tags", "md5", "sha1", "strtoupper", "strtolower", "strrev", "strlen", "soundex", "ord");
-		foreach ($stringFunctions as $key => $function) {
-			if (!function_exists($function)) unset($stringFunctions[$key]);
-		}
-		$string = "the quick brown fox jumps over the lazy dog";
-		for ($i=0; $i < $count; $i++) {
-			foreach ($stringFunctions as $function) {
-				$r = call_user_func_array($function, array($string));
-			}
-		}
-		return number_format(microtime(true) - $time_start, 3);
-	}
+// Check is target dirctory exists
+if (!file_exists ( $target_dir )) {
+    echo "Company Login name does not exist.";
+    $uploadOk = 0;
+    header("HTTP/1.1 500 Not a valid Company login name! ");
+}
 
+// Check file size
+if ($_FILES["fileToUpload"]["size"] > 500000) {
+    echo "Sorry, your file is too large. ";
+    $uploadOk = 0;
+    header("HTTP/1.1 500 Image is too large!");
+}
 
-	function test_Loops($count = 19000000) {
-		$time_start = microtime(true);
-		for($i = 0; $i < $count; ++$i);
-		$i = 0; while($i < $count) ++$i;
-		return number_format(microtime(true) - $time_start, 3);
-	}
+// Allow certain file formats
+if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg") {
+    echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed. ";
+    $uploadOk = 0;
+    header("HTTP/1.1 500 Not a valid image format!");
+}
 
-	
-	function test_IfElse($count = 9000000) {
-		$time_start = microtime(true);
-		for ($i=0; $i < $count; $i++) {
-			if ($i == -1) {
-			} elseif ($i == -2) {
-			} else if ($i == -3) {
-			}
-		}
-		return number_format(microtime(true) - $time_start, 3);
-	}	
-	
-	
-	$total = 0;
-	$functions = get_defined_functions();
-	$line = str_pad("-",38,"-");
-	echo "<pre>$line\n|".str_pad("PHP BENCHMARK SCRIPT",36," ",STR_PAD_BOTH)."|\n$line\nStart : ".date("Y-m-d H:i:s")."\nServer : {$_SERVER['SERVER_NAME']}@{$_SERVER['SERVER_ADDR']}\nPHP version : ".PHP_VERSION."\nPlatform : ".PHP_OS. "\n$line\n";
-	foreach ($functions['user'] as $user) {
-		if (preg_match('/^test_/', $user)) {
-			$total += $result = $user();
-            echo str_pad($user, 25) . " : " . $result ." sec.\n";
-        }
-	}
-	echo str_pad("-", 38, "-") . "\n" . str_pad("Total time:", 25) . " : " . $total ." sec.</pre>";
-	
+// Check if $uploadOk is set to 0 by an error
+if ($uploadOk == 0) {
+    echo "Sorry, your file was not uploaded.";
+    header("HTTP/1.1 500 An error occured whilst trying upload your image! ");
+    
+// if everything is ok, try to upload file
+} else {
+    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+        echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
+        header("HTTP/1.1 200 OK");
+    } else {
+        echo "Sorry, there was an error uploading your file.";
+        header("HTTP/1.1 500 An error occured whilst trying upload your image!");
+    }
+}
 ?>
