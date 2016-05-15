@@ -12,14 +12,16 @@ $target_dir = "../client_data/". $_POST["company_login"] . "/";
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
 $uploadOk = 1;
 $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+$curdir = getcwd();
 
-//Ensure Git repo is up to date...
+// Ensure Git repo is up to date...
 $GIT = new git();
-if ($GIT->pull() !=0) {
+if ($GIT->pull($target_dir) !=0) {
     $uploadOk= 0;
     echo "PHP was unable to succesfully run the git command! Contact support@parallel.co.za!";
-    header("HTTP/1.1 500 PHP was unable to succesfully run the git command! Contact support@parallel.co.za! ");
 }
+// CHange back to the original working directory
+chdir($curdir);
 
 // Check if image file is a actual image or fake image
 if(isset($_POST["submit"])) {
@@ -30,7 +32,6 @@ if(isset($_POST["submit"])) {
     } else {
         echo "File is not an image.";
         $uploadOk = 0;
-        header("HTTP/1.1 500 Not an image! ");
     }
 }
 
@@ -38,21 +39,18 @@ if(isset($_POST["submit"])) {
 if (!file_exists ( $target_dir )) {
     echo "Company Login name does not exist. Please try again.";
     $uploadOk = 0;
-    header("HTTP/1.1 500 Not a valid Company login name! ");
 }
 
 // Check file size
 if ($_FILES["fileToUpload"]["size"] > 500000) {
     echo "Sorry, your file is too large. ";
     $uploadOk = 0;
-    header("HTTP/1.1 500 Image is too large!");
 }
 
 // Allow certain file formats
 if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg") {
     echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed. ";
     $uploadOk = 0;
-    header("HTTP/1.1 500 Not a valid image format!");
 }else {
     // Determine file extension
     $ext = end((explode(".", $target_file)));
@@ -60,7 +58,6 @@ if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg
 
 // Check if $uploadOk is set to 0 by an error
 if ($uploadOk == 0) {
-    echo "Sorry, your file was not uploaded.";
     header("HTTP/1.1 500 An error occured whilst trying upload your image! ");
     
 // if everything is ok, try to upload, resize and replace the file...
@@ -109,7 +106,9 @@ function resizeImage($x, $y, $neww, $newh, $w, $h, $dir, $file) {
 
 function replace($d, $e, $f, $of) {
     // Now we replace the old image with the new one
-    unlink($d. "company." . $e);
+    if (file_exists ( $d . "comapny." . $e )) {
+        unlink($d. "company." . $e);    
+    }
     unlink($f);
     rename($of, $d . "company." . $e);
 }

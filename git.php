@@ -8,12 +8,11 @@
 **/
 
 class git {
-    public function pull() {
-        $target_dir = "../client_data/";
-        chdir($target_dir);
-
+    // A git pull to pull down any chanegs to the repo locally that may have occured since the last time this application has run.
+    public function pull($dir) {
+        chdir($dir);
         exec("git pull", $output, $result);
-        
+        // Return exc exitcode 
         return $result;
     }
 }
