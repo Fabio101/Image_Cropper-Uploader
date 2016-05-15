@@ -105,9 +105,12 @@ function hideUpload() {
 function showCoords(c)
   {
 	// Coordinate variables:
-	// c.x, c.y, c.x2, c.y2, c.w, c.h
 	$('#img-upload-output').show();
 	$('#img-upload-output').html("<b>Cropping Coordinates :</b></br>X : " + c.x + "</br>Y : " + c.y + "</br>Width : " + c.w + "</br>Height : " + c.h);
+    $('#x').val(c.x);
+    $('#y').val(c.y);
+    $('#width').val(c.w);
+    $('#height').val(c.h);
   };
 
 function cropImage() {

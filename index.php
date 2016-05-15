@@ -23,7 +23,11 @@
 			</br>
 			<div id="progress-div"><div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="70"
   aria-valuemin="0" aria-valuemax="100" style="width:0%"></div></div>
-			</br>    
+			</br>
+            <input type="hidden" name="x" id="x" value="">
+            <input type="hidden" name="y" id="y" value="">
+            <input type="hidden" name="width" id="width" value="">
+            <input type="hidden" name="height" id="height" value="">
 			<input id="img-file-crop" value="SELECT IMAGE" type="button" name="fileToUpload" onclick="validateImage()" class="btn btn-default">
 			<input id="img-file-upload" value="UPLOAD" type="submit" class="btn btn-default" name="submit">
 			</br></br>

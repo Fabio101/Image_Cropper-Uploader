@@ -1,8 +1,17 @@
 <?php
+/**
+*
+* Author : Fabio Pinto - 50121308
+*
+* Description : handles the file upload and resize operations for the image cropper app.
+*
+**/
+
 $target_dir = "../client_data/". $_POST["company_login"] . "/";
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
 $uploadOk = 1;
 $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
 // Check if image file is a actual image or fake image
 if(isset($_POST["submit"])) {
     $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
@@ -45,16 +54,53 @@ if ($uploadOk == 0) {
     echo "Sorry, your file was not uploaded.";
     header("HTTP/1.1 500 An error occured whilst trying upload your image! ");
     
-// if everything is ok, try to upload file
+// if everything is ok, try to upload, resize and replace the file...
 } else {
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        unlink($target_dir. "company." . $ext);
-        rename($target_file, $target_dir . "company." . $ext);
+        
+        // Get new sizes
+        list($width, $height) = getimagesize($target_file);
+        $newx = $_POST["x"];
+        $newy = $_POST["y"];
+        $newwidth = $_POST["width"];
+        $newheight = $_POST["height"] ;
+        
+        //Begin resize operation and replacements...
+        resizeImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file);
+
         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
         header("HTTP/1.1 200 OK");
     } else {
         echo "Sorry, there was an error uploading your file, Please contact support@parallel.co.za.";
         header("HTTP/1.1 500 An error occured whilst trying upload your image!");
+    }
+}
+
+function resizeImage($x, $y, $neww, $newh, $w, $h, $dir, $file) {
+    
+    // Recheck extention for below conditional
+    $ext2 = end((explode(".", $file)));
+    
+    if ($ext2 == "jpg") {
+        // We use Imagick to crop the file and write to a new jpg
+        $outFile = $dir . "cropped.png";
+        $image = new Imagick($file);
+        $image->cropImage($h, $w, $x, $y);
+        $image->writeImage($outFile);
+        // Now we replace the old image with the new one
+        unlink($dir. "company." . $ext2);
+        unlink($file);
+        rename($outFile, $dir . "company." . $ext2);
+    } else {
+        // We use Imagick to crop the file and write to a new png
+        $outFile = $dir . "cropped.png";
+        $image = new Imagick($file);
+        $image->cropImage($h, $w, $x, $y);
+        $image->writeImage($outFile);
+        // Now we replace the old image with the new one
+        unlink($dir. "company." . $ext2);
+        unlink($file);
+        rename($outFile, $dir . "company." . $ext2);
     }
 }
 ?>
