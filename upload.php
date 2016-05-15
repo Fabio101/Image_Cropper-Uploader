@@ -6,11 +6,20 @@
 * Description : handles the file upload and resize operations for the image cropper app.
 *
 **/
+require_once("git.php");
 
 $target_dir = "../client_data/". $_POST["company_login"] . "/";
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
 $uploadOk = 1;
 $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+//Ensure Git repo is up to date...
+$GIT = new git();
+if ($GIT->pull() !=0) {
+    $uploadOk= 0;
+    echo "PHP was unable to succesfully run the git command! Contact support@parallel.co.za!";
+    header("HTTP/1.1 500 PHP was unable to succesfully run the git command! Contact support@parallel.co.za! ");
+}
 
 // Check if image file is a actual image or fake image
 if(isset($_POST["submit"])) {
@@ -27,7 +36,7 @@ if(isset($_POST["submit"])) {
 
 // Check is target dirctory exists
 if (!file_exists ( $target_dir )) {
-    echo "Company Login name does not exist.";
+    echo "Company Login name does not exist. Please try again.";
     $uploadOk = 0;
     header("HTTP/1.1 500 Not a valid Company login name! ");
 }
@@ -67,7 +76,7 @@ if ($uploadOk == 0) {
         
         //Begin resize operation and replacements...
         resizeImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file);
-
+    
         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
         header("HTTP/1.1 200 OK");
     } else {
@@ -87,20 +96,21 @@ function resizeImage($x, $y, $neww, $newh, $w, $h, $dir, $file) {
         $image = new Imagick($file);
         $image->cropImage($h, $w, $x, $y);
         $image->writeImage($outFile);
-        // Now we replace the old image with the new one
-        unlink($dir. "company." . $ext2);
-        unlink($file);
-        rename($outFile, $dir . "company." . $ext2);
+        
     } else {
         // We use Imagick to crop the file and write to a new png
         $outFile = $dir . "cropped.png";
         $image = new Imagick($file);
         $image->cropImage($h, $w, $x, $y);
         $image->writeImage($outFile);
-        // Now we replace the old image with the new one
-        unlink($dir. "company." . $ext2);
-        unlink($file);
-        rename($outFile, $dir . "company." . $ext2);
     }
+    replace($dir, $ext2, $file, $outFile);
+}
+
+function replace($d, $e, $f, $of) {
+    // Now we replace the old image with the new one
+    unlink($d. "company." . $e);
+    unlink($f);
+    rename($of, $d . "company." . $e);
 }
 ?>
