@@ -7,6 +7,7 @@
 *
 **/
 require_once("git.php");
+require_once("crop.php");
 
 $target_dir = "../client_data/". $_POST["company_login"] . "/";
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
@@ -69,47 +70,64 @@ if ($uploadOk == 0) {
         $newx = $_POST["x"];
         $newy = $_POST["y"];
         $newwidth = $_POST["width"];
-        $newheight = $_POST["height"] ;
+        $newheight = $_POST["height"];
         
         //Begin resize operation and replacements...
-        resizeImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file);
+        resizeImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file, $GIT, $curdir, $CROP);
     
         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
         header("HTTP/1.1 200 OK");
     } else {
         echo "Sorry, there was an error uploading your file, Please contact support@parallel.co.za.";
-        header("HTTP/1.1 500 An error occured whilst trying upload your image!");
+        header("HTTP/1.1 500 An error occured whilst trying to upload your image!");
     }
 }
 
-function resizeImage($x, $y, $neww, $newh, $w, $h, $dir, $file) {
+function resizeImage($x, $y, $neww, $newh, $w, $h, $dir, $file, $GIT, $curdir) {
+    
+    // Instantiate crop class
+    $CROP = new cropper();
     
     // Recheck extention for below conditional
     $ext2 = end((explode(".", $file)));
     
     if ($ext2 == "jpg") {
         // We use Imagick to crop the file and write to a new jpg
-        $outFile = $dir . "cropped.png";
-        $image = new Imagick($file);
-        $image->cropImage($h, $w, $x, $y);
-        $image->writeImage($outFile);
+        $outFile = $dir . "cropped.jpg";
+        // Call the crop method to crop the image...
+        $CROP->edit($outFile, $neww, $newh, $x, $y, $file);
         
     } else {
         // We use Imagick to crop the file and write to a new png
         $outFile = $dir . "cropped.png";
-        $image = new Imagick($file);
-        $image->cropImage($h, $w, $x, $y);
-        $image->writeImage($outFile);
+        // Call the crop method to crop the image...
+        $CROP->edit($outFile, $neww, $newh, $x, $y, $file);
     }
-    replace($dir, $ext2, $file, $outFile);
+    replace($dir, $ext2, $file, $outFile, $GIT, $curdir);
 }
 
-function replace($d, $e, $f, $of) {
+function replace($d, $e, $f, $of, $GIT, $curdir) {
     // Now we replace the old image with the new one
     if (file_exists ( $d . "comapny." . $e )) {
         unlink($d. "company." . $e);    
     }
     unlink($f);
     rename($of, $d . "company." . $e);
+    
+    // Now we can commit our new file to the repo
+    if ($GIT->add($d) !=0) {
+        $uploadOk= 0;
+        echo "PHP was unable to succesfully run the git add! Contact support@parallel.co.za!";
+        header("HTTP/1.1 500 An error occured whilst trying to track your image!");
+    }
+    chdir($curdir);
+    
+    // Then we commit with a message...
+    if ($GIT->commit($d, $_POST["company_login"]) !=0) {
+        $uploadOk= 0;
+        echo "PHP was unable to succesfully run the git commit! Contact support@parallel.co.za!";
+        header("HTTP/1.1 500 An error occured whilst trying to commit your image!");
+    }
+    chdir($curdir);
 }
 ?>
