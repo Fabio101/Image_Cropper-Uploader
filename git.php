@@ -11,8 +11,8 @@ class git {
     // A git pull to pull down any chanegs to the repo locally that may have occured since the last time this application has run.
     public function pull($dir) {
         chdir($dir);
-        exec("git pull", $output, $result);
-        // Return exec exit code 
+        exec("git pull origin 50121308-nonlive", $output, $result);
+        // Return exec exit code
         return $result;
     }
     
@@ -28,6 +28,14 @@ class git {
     public function commit($dir, $company) {
         chdir($dir);
         exec("git commit -m 'Logo Cropper Commit for '" . $company, $output, $result);
+        // Return exec exit code
+        return $result;
+    }
+    
+    // A git push to our testing branch
+    public function push($dir) {
+        chdir($dir);
+        exec("git push origin 50121308-nonlive", $output, $result);
         // Return exec exit code
         return $result;
     }

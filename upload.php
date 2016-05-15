@@ -19,7 +19,7 @@ $curdir = getcwd();
 $GIT = new git();
 if ($GIT->pull($target_dir) !=0) {
     $uploadOk= 0;
-    echo "PHP was unable to succesfully run the git command! Contact support@parallel.co.za!";
+    echo "PHP was unable to succesfully run the git pull command! Contact support@parallel.co.za!";
 }
 // CHange back to the original working directory
 chdir($curdir);
@@ -73,7 +73,7 @@ if ($uploadOk == 0) {
         $newheight = $_POST["height"];
         
         //Begin resize operation and replacements...
-        resizeImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file, $GIT, $curdir, $CROP);
+        cropImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file, $GIT, $curdir, $CROP);
     
         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
         header("HTTP/1.1 200 OK");
@@ -83,7 +83,7 @@ if ($uploadOk == 0) {
     }
 }
 
-function resizeImage($x, $y, $neww, $newh, $w, $h, $dir, $file, $GIT, $curdir) {
+function cropImage($x, $y, $neww, $newh, $w, $h, $dir, $file, $GIT, $curdir) {
     
     // Instantiate crop class
     $CROP = new cropper();
@@ -98,9 +98,7 @@ function resizeImage($x, $y, $neww, $newh, $w, $h, $dir, $file, $GIT, $curdir) {
         $CROP->edit($outFile, $neww, $newh, $x, $y, $file);
         
     } else {
-        // We use Imagick to crop the file and write to a new png
         $outFile = $dir . "cropped.png";
-        // Call the crop method to crop the image...
         $CROP->edit($outFile, $neww, $newh, $x, $y, $file);
     }
     replace($dir, $ext2, $file, $outFile, $GIT, $curdir);
@@ -115,7 +113,7 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
     rename($of, $d . "company." . $e);
     
     // Now we can commit our new file to the repo
-    if ($GIT->add($d) !=0) {
+    if ($GIT->add($d) != 0) {
         $uploadOk= 0;
         echo "PHP was unable to succesfully run the git add! Contact support@parallel.co.za!";
         header("HTTP/1.1 500 An error occured whilst trying to track your image!");
@@ -123,10 +121,17 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
     chdir($curdir);
     
     // Then we commit with a message...
-    if ($GIT->commit($d, $_POST["company_login"]) !=0) {
+    if ($GIT->commit($d, $_POST["company_login"]) != 0) {
         $uploadOk= 0;
         echo "PHP was unable to succesfully run the git commit! Contact support@parallel.co.za!";
         header("HTTP/1.1 500 An error occured whilst trying to commit your image!");
+    }
+    
+    // Now we push to our test branch
+    if ($GIT->push($d) != 0) {
+        $uploadOk= 0;
+        echo "PHP was unable to succesfully run the git push! Contact support@parallel.co.za!";
+        header("HTTP/1.1 500 An error occured whilst trying to push your image!");
     }
     chdir($curdir);
 }
