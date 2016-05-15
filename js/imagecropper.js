@@ -8,7 +8,7 @@ $(document).ready(function(){
         		$('#img-file-output').hide();
                 $('#company_login').hide();
 			    $('#img-upload-output').html("Uploading, please wait...");
-                    	$("#progress-bar").width('0%');
+                $("#progress-bar").width('0%');
                 },
                 uploadProgress: function (event, position, total, percentComplete){	
                     	$("#progress-bar").width(percentComplete + '%');
@@ -58,7 +58,13 @@ function validateImage() {
                 }
 
                 var image = $('#img-file-input')[0].files[0];
-                renderImage(image);
+                
+                if ($("#company_login").val() === "" || $("#company_login").val() === "Company Login Name: ") {
+                    $('#img-upload-output').html("<b style='color:red;'>Error: Enter a valid Company Login Name!</b>");
+                    return
+                } else {
+                    renderImage(image);
+                }
 
 		$('#img-file-upload').hide();
         }
