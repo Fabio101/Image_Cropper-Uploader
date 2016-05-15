@@ -85,8 +85,8 @@ function renderImage(file) {
 		image.src = dimensions.result;
 
     		image.onload = function() {
-			if (image.width > 800 || image.height > 600 || image.width < 150 || image.height < 150) {
-				$('#img-upload-output').html("Selected Image Width: " + image.width + "px</br>Selected Image Height: " + image.height + "px</br><b style='color:red;'>Error: </br>Max Width: 800px ; Max Height: 600px </br>Min Width: 150px ; Min Height: 150px")
+			if (image.width > 500 || image.height > 500 || image.width < 100 || image.height < 100) {
+				$('#img-upload-output').html("Selected Image Width: " + image.width + "px</br>Selected Image Height: " + image.height + "px</br><b style='color:red;'>Error: </br>Max Width: 500px ; Max Height: 500px </br>Min Width: 100px ; Min Height: 100px")
 			}
 			else
 			{
@@ -124,8 +124,8 @@ function cropImage() {
 	$(function() {
         	$('#img-file-cropme').Jcrop({
 					onSelect: showUpload,
-					minSize: [150, 150],
-					maxSize: [800, 600], 
+					minSize: [100, 100],
+					maxSize: [500, 500], 
 					onChange: showCoords, 
 					onRelease: hideUpload});
 	});
