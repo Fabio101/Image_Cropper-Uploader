@@ -15,11 +15,21 @@ $uploadOk = 1;
 $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
 $curdir = getcwd();
 
+// Check is target dirctory exists
+if (!file_exists ( $target_dir )) {
+    echo "Company Login name does not exist. Please try again.";
+    header("HTTP/1.1 500 Company name does not exist! ");
+    $uploadOk = 0;
+    return;
+}
+
 // Ensure Git repo is up to date...
 $GIT = new git();
 if ($GIT->pull($target_dir) !=0) {
     $uploadOk= 0;
     echo "PHP was unable to succesfully run the git pull command! Contact support@parallel.co.za!";
+    header("HTTP/1.1 500 Git pull failed! ");
+    return;
 }
 // CHange back to the original working directory
 chdir($curdir);
@@ -33,25 +43,24 @@ if(isset($_POST["submit"])) {
     } else {
         echo "File is not an image.";
         $uploadOk = 0;
+        return;
     }
-}
-
-// Check is target dirctory exists
-if (!file_exists ( $target_dir )) {
-    echo "Company Login name does not exist. Please try again.";
-    $uploadOk = 0;
 }
 
 // Check file size
 if ($_FILES["fileToUpload"]["size"] > 500000) {
     echo "Sorry, your file is too large. ";
+    header("HTTP/1.1 500 File is too large! ");
     $uploadOk = 0;
+    return;
 }
 
 // Allow certain file formats
 if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg") {
     echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed. ";
+    header("HTTP/1.1 500 Invalid file format! ");
     $uploadOk = 0;
+    return;
 }else {
     // Determine file extension
     $ext = end((explode(".", $target_file)));
@@ -59,7 +68,9 @@ if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg
 
 // Check if $uploadOk is set to 0 by an error
 if ($uploadOk == 0) {
+    echo "Something went wrong! Contact support@parallel.co.za";
     header("HTTP/1.1 500 An error occured whilst trying upload your image! ");
+    return;
     
 // if everything is ok, try to upload, resize and replace the file...
 } else {
@@ -80,6 +91,7 @@ if ($uploadOk == 0) {
     } else {
         echo "Sorry, there was an error uploading your file, Please contact support@parallel.co.za.";
         header("HTTP/1.1 500 An error occured whilst trying to upload your image!");
+        return;
     }
 }
 
@@ -117,6 +129,7 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
         $uploadOk= 0;
         echo "PHP was unable to succesfully run the git add! Contact support@parallel.co.za!";
         header("HTTP/1.1 500 An error occured whilst trying to track your image!");
+        return;
     }
     chdir($curdir);
     
@@ -125,6 +138,7 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
         $uploadOk= 0;
         echo "PHP was unable to succesfully run the git commit! Contact support@parallel.co.za!";
         header("HTTP/1.1 500 An error occured whilst trying to commit your image!");
+        return;
     }
     
     // Now we push to our test branch
@@ -132,6 +146,7 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
         $uploadOk= 0;
         echo "PHP was unable to succesfully run the git push! Contact support@parallel.co.za!";
         header("HTTP/1.1 500 An error occured whilst trying to push your image!");
+        return;
     }
     chdir($curdir);
 }
