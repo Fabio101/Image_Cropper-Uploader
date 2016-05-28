@@ -6,8 +6,10 @@
 * Description : handles the file upload and resize operations for the image cropper app.
 *
 **/
+
 require_once("git.php");
 require_once("crop.php");
+require_once("sqlite.php");
 
 $target_dir = "../client_data/". $_POST["company_login"] . "/";
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
@@ -84,7 +86,7 @@ if ($uploadOk == 0) {
         $newheight = $_POST["height"];
         
         //Begin resize operation and replacements...
-        cropImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file, $GIT, $curdir, $CROP);
+        cropImage($newx, $newy, $newwidth, $newheight, $width, $height, $target_dir, $target_file, $GIT, $curdir);
     
         echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
         header("HTTP/1.1 200 OK");
@@ -149,5 +151,24 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
         return;
     }
     chdir($curdir);
+
+    // Now we can pull on our PP server
+    if ($db = new MyDB() == 'OK') {
+        $sql = 'SELECT * from creds WHERE ID = 1;';
+
+        $ret = $db->query($sql);
+        while($row = $ret->fetchArray(SQLITE3_ASSOC)){
+            $host = $row['HOST'];
+            $user = $row['USER'];
+        }
+    }
+var_dump($GIT->remotePull($host, $user));
+die();
+    if ($GIT->remotePull($host, $user) != 0) {
+        $uploadOk= 0;
+        echo "PHP was unable to succesfully run the git pull on remote host! Contact support@parallel.co.za!";
+        header("HTTP/1.1 500 An error occured whilst trying to push your image!");
+        return;
+    }
 }
 ?>
