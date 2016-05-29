@@ -40,11 +40,9 @@ class git {
         return $result;
     }
 
-    public function remotePull($host, $user) {
-       // Make an SSH connection and execute git pull
-       exec("ssh -p 223 -t " .$user. "@" .$host . " 'sudo git pull' 2>&1", $output, $result);
-       // Return exec exit code
-       return $output;
+    public function remotePull($host, $user, $pass) {
+        exec("ssh -t ".$user."@".$host. " 'git pull'", $output, $result);
+        return $result;
     }
 }
 ?>

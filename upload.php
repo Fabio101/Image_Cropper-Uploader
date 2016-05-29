@@ -142,7 +142,7 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
         header("HTTP/1.1 500 An error occured whilst trying to commit your image!");
         return;
     }
-    
+    chdir($curdir);
     // Now we push to our test branch
     if ($GIT->push($d) != 0) {
         $uploadOk= 0;
@@ -153,22 +153,36 @@ function replace($d, $e, $f, $of, $GIT, $curdir) {
     chdir($curdir);
 
     // Now we can pull on our PP server
-    if ($db = new MyDB() == 'OK') {
+    $db = new MyDB();
+
+    if(!$db){
+        echo $db->lastErrorMsg();
+        echo "PHP was unable to succesfully connect to SQLite! Contact support@parallel.co.za!";
+        header("HTTP/1.1 500 An error occured whilst trying to connect to SQLite!");
+        return;
+    } else {
+      echo "OK";
+    }
+
         $sql = 'SELECT * from creds WHERE ID = 1;';
 
         $ret = $db->query($sql);
         while($row = $ret->fetchArray(SQLITE3_ASSOC)){
             $host = $row['HOST'];
             $user = $row['USER'];
+            $pass = $row['PASS'];
         }
-    }
-var_dump($GIT->remotePull($host, $user));
+    chdir($curdir);
+
+var_dump($GIT->remotePull($host, $user, $pass));
 die();
-    if ($GIT->remotePull($host, $user) != 0) {
-        $uploadOk= 0;
-        echo "PHP was unable to succesfully run the git pull on remote host! Contact support@parallel.co.za!";
-        header("HTTP/1.1 500 An error occured whilst trying to push your image!");
-        return;
-    }
+
+
+    $GIT->remotePull($host, $user, $pass);
+        #$uploadOk= 0;
+        #echo "PHP was unable to succesfully run the git pull on remote host! Contact support@parallel.co.za!";
+        #header("HTTP/1.1 500 An error occured whilst trying to push your image!");
+        #return;
+    #}
 }
 ?>
